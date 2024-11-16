@@ -2,7 +2,7 @@ import { PHOTOS_URLS, COMMENTS_AVATAR_URLS, DESCRIPTION_TEMPLATE, COMMENT_MESSAG
 import { getRandomInteger, createRandomIndexFromRangeGenerator } from './utils.js';
 
 const getPublishPhotoId = createRandomIndexFromRangeGenerator(0, 25);
-const getPublishPhotoIndex = createRandomIndexFromRangeGenerator(0, 25);
+const getPublishPhotoIndex = createRandomIndexFromRangeGenerator(0, 24);
 
 const getPublishPhotoDescription = () => {
 
