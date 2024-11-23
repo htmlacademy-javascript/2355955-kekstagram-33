@@ -1,3 +1,4 @@
+import { renderFullSizeImg } from './full-size-image.js';
 import { createMockPhotosDescriptionData } from './mock-data.js';
 const picturesContainer = document.querySelector('.pictures');
 const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
@@ -13,6 +14,9 @@ mockPhotosDescriptionData.forEach(({ url, likes, comments, description }) => {
 
   pictureCommentsCount.textContent = comments.length;
   pictureLikesCount.textContent = likes;
+  clonedPictureTemplate.addEventListener('click', () => {
+    renderFullSizeImg({ url, likes, comments, description });
+  });
 
   picturesContainer.append(clonedPictureTemplate);
 });
