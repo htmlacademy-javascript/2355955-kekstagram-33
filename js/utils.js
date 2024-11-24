@@ -22,5 +22,6 @@ function createRandomIndexFromRangeGenerator(min = 1, max = 625) {
     return currentValue;
   };
 }
+const isEscapeKey = (evt) => evt.key === 'Escape';
+export { getRandomInteger, createRandomIndexFromRangeGenerator, isEscapeKey };
 
-export { getRandomInteger, createRandomIndexFromRangeGenerator };
