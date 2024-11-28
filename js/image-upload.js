@@ -185,6 +185,8 @@ function closeUploadImageEditForm() {
   imgUpload.value = '';
   imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.removeEventListener('change', onImgUploadChangeEffectRadioInputChange));
 
+  const defaultEffect = document.querySelector('.effects__radio[value="none"]');
+  defaultEffect.checked = true;
   inputHashtagField.removeEventListener('focus', onInputOrHashtagFieldFocus);
   inputCommentField.removeEventListener('focus', onInputOrHashtagFieldFocus);
   inputHashtagField.removeEventListener('blur', onInputOrHashtagFieldBlur);
@@ -200,12 +202,8 @@ function closeUploadImageEditForm() {
 }
 
 
-imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.addEventListener('change', onImgUploadChangeEffectRadioInputChange));
-imgUpload.addEventListener('change', onImgUploadChange);
-
-
 function onImgUploadChange() {
-
+  imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.addEventListener('change', onImgUploadChangeEffectRadioInputChange));
   scaleControlInput.value = 100;
 
   scaleControlBiggerBtn.addEventListener('click', onScaleControlBiggerBtnClick);
@@ -221,3 +219,4 @@ function onImgUploadChange() {
   uploadImageEditForm.classList.toggle('hidden');
   body.classList.toggle('modal-open');
 }
+imgUpload.addEventListener('change', onImgUploadChange);
