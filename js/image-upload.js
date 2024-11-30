@@ -180,6 +180,7 @@ function onImgUploadChangeEffectRadioInputChange({ target }) {
 
 
 function closeUploadImageEditForm() {
+  imgUploadForm.reset();
   uploadImageEditForm.classList.toggle('hidden');
   body.classList.toggle('modal-open');
   imgUpload.value = '';
