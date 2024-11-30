@@ -184,6 +184,7 @@ function closeUploadImageEditForm() {
   imgUploadForm.reset();
   uploadImageEditForm.classList.toggle('hidden');
   body.classList.toggle('modal-open');
+  imgUploadPreview.style.filter = '';
   imgUpload.value = '';
   imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.removeEventListener('change', onImgUploadChangeEffectRadioInputChange));
 
