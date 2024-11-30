@@ -154,6 +154,7 @@ function onImgUploadChangeEffectRadioInputChange({ target }) {
 
 
   if (target.checked && target.value === 'none') {
+    imgUploadPreview.style.filter = '';
     sliderLevelEffectElement.style.display = 'none';
     return;
   }
