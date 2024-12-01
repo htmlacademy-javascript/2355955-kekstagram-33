@@ -222,4 +222,5 @@ function onImgUploadChange() {
   uploadImageEditForm.classList.toggle('hidden');
   body.classList.toggle('modal-open');
 }
+// задание module9-task2 выполнено в предыдущем задании.
 imgUpload.addEventListener('change', onImgUploadChange);
