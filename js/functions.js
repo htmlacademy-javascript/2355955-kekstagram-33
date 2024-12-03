@@ -3,7 +3,7 @@ const checkStringLength = (string, maxLength) => string.trim().length <= maxLeng
 const getReversedString = (string) => {
   let reversedString = '';
 
-  for(let i = string.length - 1; i >= 0; i--) {
+  for (let i = string.length - 1; i >= 0; i--) {
     reversedString += string[i];
   }
 
@@ -28,4 +28,26 @@ const extractNubmerFromString = (param) => {
   }
   return result ? parseInt(result, 10) : NaN;
 };
+
+const isOverWorkdayLimit = ({ startWorkdayTime, endWorkdayTime, meetingStartTime, meetingDuration }) => {
+  const timeToMinutes = (time) => {
+    const [hours, minutes] = time.split(':').map((item) => parseInt(item, 10));
+    return hours * 60 + minutes;
+  };
+
+  const startWorkdayMinutes = timeToMinutes(startWorkdayTime);
+  const endWorkdayMinutes = timeToMinutes(endWorkdayTime);
+  const meetingStartMinutes = timeToMinutes(meetingStartTime);
+
+  const meetingEndMinutes = meetingStartMinutes + meetingDuration;
+
+  return meetingStartMinutes >= startWorkdayMinutes && meetingEndMinutes <= endWorkdayMinutes;
+};
+
+const workdayStart = '8:00';
+const workdayEnd = '17:30';
+const meetingStart = '8:00';
+const duration = 900;
+
+console.log(isOverWorkdayLimit({ startWorkdayTime: workdayStart, endWorkdayTime: workdayEnd, meetingStartTime: meetingStart, meetingDuration: duration }));
 
