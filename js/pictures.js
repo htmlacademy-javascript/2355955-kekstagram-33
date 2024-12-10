@@ -1,10 +1,9 @@
 import { renderFullSizeImg } from './full-size-image.js';
-import { createMockPhotosDescriptionData } from './mock-data.js';
 const picturesContainer = document.querySelector('.pictures');
 const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
 
-const mockPhotosDescriptionData = createMockPhotosDescriptionData();
-mockPhotosDescriptionData.forEach(({ url, likes, comments, description }) => {
+
+const renderPhoto = ({ url, likes, comments, description }) => {
   const clonedPictureTemplate = pictureTemplate.cloneNode(true);
   const picture = clonedPictureTemplate.querySelector('.picture__img');
   const pictureCommentsCount = clonedPictureTemplate.querySelector('.picture__comments');
@@ -19,4 +18,8 @@ mockPhotosDescriptionData.forEach(({ url, likes, comments, description }) => {
   });
 
   picturesContainer.append(clonedPictureTemplate);
-});
+};
+
+export const renderPhotosList = (data) => {
+  data.forEach(renderPhoto);
+};

@@ -1,5 +1,5 @@
-import { isEscapeKey } from './utils.js';
-
+import { isEscapeKey, showUploadDataSucessMessage } from './utils.js';
+import { sendData } from './api.js';
 const imgUploadForm = document.querySelector('.img-upload__form');
 const uploadImageEditForm = document.querySelector('.img-upload__overlay');
 const closeUploadImageEditFormBtn = uploadImageEditForm.querySelector('.img-upload__cancel');
@@ -13,25 +13,49 @@ const scaleControlSmallerBtn = uploadImageEditForm.querySelector('.scale__contro
 const scaleControlBiggerBtn = uploadImageEditForm.querySelector('.scale__control--bigger');
 const inputHashtagField = imgUploadForm.querySelector('.text__hashtags');
 const inputCommentField = imgUploadForm.querySelector('.text__description');
+const submitButton = uploadImageEditForm.querySelector('.img-upload__submit');
+const uploadErrorTemplate = document.querySelector('#error').content.querySelector('.error');
 
+const SubmitButtonText = {
+  IDLE: 'Сохранить',
+  SENDING: 'Сохраняю...'
+};
 
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+  submitButton.textContent = SubmitButtonText.SENDING;
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+  submitButton.textContent = SubmitButtonText.IDLE;
+};
 const pristine = new Pristine(imgUploadForm, {
   classTo: 'img-upload__field-wrapper',
   errorTextParent: 'img-upload__field-wrapper',
+  errorClass: 'img-upload__field-wrapper--error',
 
 });
 
-const validateHashtagField = (value) => {
+const validateHashtagFieldTemplate = (value) => {
   const suitableTemplate = /^#[a-zа-яё0-9]{1,20}$/i;
-
-  return value.trim().split(' ').reduce((acc, curr) => {
-    if (!acc.includes(curr)) {
-      acc.push(curr);
-    }
-    return acc;
-  }, []).some((tag) => suitableTemplate.test(tag));
+  return !value.trim().split(' ').some((tag) => !suitableTemplate.test(tag));
 };
+const validateMaxHashtagCount = (value) => !(value.trim().split(' ').length > 5);
 
+const validateSameHashtag = (value) => {
+  const array = [];
+  return value.trim().split(' ').reduce((acc, curr) => {
+    if (!acc) {
+      return false;
+    }
+    if (!array.includes(curr)) {
+      array.push(curr);
+      return acc;
+    }
+    return false;
+  }, true);
+};
 const validateCommentFiled = (value) => {
   if (!value.trim()) {
     return true;
@@ -39,30 +63,46 @@ const validateCommentFiled = (value) => {
   return value.length <= 140;
 
 };
-pristine.addValidator(inputHashtagField, validateHashtagField);
-pristine.addValidator(inputCommentField, validateCommentFiled);
-
-const onSubmitImgUploadFormBtnClick = (evt) => {
-  if (!pristine.validate()) {
-    evt.preventDefault();
-  }
-
-};
+pristine.addValidator(inputHashtagField, validateHashtagFieldTemplate, 'введён невалидный хэштег');
+pristine.addValidator(inputHashtagField, validateMaxHashtagCount, 'превышено количество хэштегов');
+pristine.addValidator(inputHashtagField, validateSameHashtag, 'хэштеги повторяются');
+pristine.addValidator(inputCommentField, validateCommentFiled, 'длина комментария больше 140 символов.');
 
 const body = document.getElementsByTagName('body')[0];
 
-const onDocumentKeydown = (evt) => {
-
-  if (isEscapeKey(evt)) {
-    closeUploadImageEditForm();
-
+const onDocumentClick = (evt) => {
+  const uploadDataErrorMessageWrapper = document.querySelector('.error');
+  const uploadDataErrorMessageInner = document.querySelector('.error__inner');
+  if (uploadDataErrorMessageInner && !uploadDataErrorMessageInner.contains(evt.target)) {
+    uploadDataErrorMessageWrapper.remove();
   }
 };
 
+const onCloseUploadDataMessageBtn = (errorElement, closeUploadDataErrorMessageBtn) => () => {
+  errorElement.remove();
+  closeUploadDataErrorMessageBtn.removeEventListener('click', onCloseUploadDataMessageBtn);
+  document.removeEventListener('click', onDocumentClick);
+};
+const showUploadDataErrorMessage = () => {
+  const errorElement = uploadErrorTemplate.cloneNode(true);
+  body.insertAdjacentElement('beforeend', errorElement);
+  const closeUploadDataErrorMessageBtn = errorElement.querySelector('.error__button');
+  closeUploadDataErrorMessageBtn.addEventListener('click', onCloseUploadDataMessageBtn(errorElement, closeUploadDataErrorMessageBtn));
+  document.addEventListener('click', onDocumentClick);
+};
 const onUploadImageEditFormBtnClick = () => {
   closeUploadImageEditForm();
 };
 
+const onDocumentKeydown = (evt) => {
+  const uploadDataErrorMessage = document.querySelector('.error');
+  if (isEscapeKey(evt) && !uploadDataErrorMessage) {
+    closeUploadImageEditForm();
+  } else if (isEscapeKey(evt) && uploadDataErrorMessage) {
+    uploadDataErrorMessage.remove();
+    document.removeEventListener('click', onDocumentClick);
+  }
+};
 
 const getNoUiSliderConfig = ({ effectType }) => {
   let min = 0;
@@ -152,7 +192,8 @@ const onInputOrHashtagFieldBlur = () => {
 
 function onImgUploadChangeEffectRadioInputChange({ target }) {
 
-
+  scaleControlInput.value = '100';
+  imgUploadPreview.style.transform = `scale(${scaleControlInput.value / 100})`;
   if (target.checked && target.value === 'none') {
     imgUploadPreview.style.filter = '';
     sliderLevelEffectElement.style.display = 'none';
@@ -179,6 +220,29 @@ function onImgUploadChangeEffectRadioInputChange({ target }) {
   }
 }
 
+const onSubmitImgUploadFormBtnClick = (evt) => {
+  if (!pristine.validate()) {
+    return;
+  }
+  evt.preventDefault();
+  blockSubmitButton();
+  const data = new FormData(evt.target);
+  sendData(data)
+    .then(() => {
+      unblockSubmitButton();
+      uploadImageEditForm.classList.toggle('hidden');
+      body.classList.toggle('modal-open');
+      imgUploadForm.reset();
+      scaleControlInput.value = '100';
+      imgUploadPreview.style.transform = `scale(${scaleControlInput.value / 100})`;
+      imgUploadPreview.style.filter = '';
+      sliderLevelEffectElement.style.display = 'none';
+      showUploadDataSucessMessage();
+    })
+    .catch(() => showUploadDataErrorMessage())
+    .finally(() => unblockSubmitButton());
+
+};
 
 function closeUploadImageEditForm() {
   imgUploadForm.reset();
@@ -186,6 +250,7 @@ function closeUploadImageEditForm() {
   body.classList.toggle('modal-open');
   imgUploadPreview.style.filter = '';
   imgUpload.value = '';
+  scaleControlInput.value = '100';
   imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.removeEventListener('change', onImgUploadChangeEffectRadioInputChange));
 
   const defaultEffect = document.querySelector('.effects__radio[value="none"]');
@@ -224,3 +289,4 @@ function onImgUploadChange() {
 }
 // задание module9-task2 выполнено в предыдущем задании.
 imgUpload.addEventListener('change', onImgUploadChange);
+

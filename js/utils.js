@@ -1,3 +1,6 @@
+const downloadErrorTemplate = document.querySelector('#data-error').content.querySelector('.data-error');
+const uploadSuccessTemplate = document.querySelector('#success').content.querySelector('.success');
+const body = document.querySelector('body');
 function getRandomInteger(min, max) {
   const lower = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const upper = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
@@ -12,7 +15,6 @@ function createRandomIndexFromRangeGenerator(min = 1, max = 625) {
   return function () {
     let currentValue = getRandomInteger(min, max);
     if (previousValues.length >= (max - min + 1)) {
-      console.error('Перебраны все числа из диапазона от ' + min + ' до ' + max);
       return null;
     }
     while (previousValues.includes(currentValue)) {
@@ -23,5 +25,19 @@ function createRandomIndexFromRangeGenerator(min = 1, max = 625) {
   };
 }
 const isEscapeKey = (evt) => evt.key === 'Escape';
-export { getRandomInteger, createRandomIndexFromRangeGenerator, isEscapeKey };
+
+const showDownloadDataErrorMessage = ({ errorDisplayTime = 5000 } = {}) => {
+  const errorElement = downloadErrorTemplate.cloneNode(true);
+  body.insertAdjacentElement('beforeend', errorElement);
+  setTimeout(() => errorElement.remove(), errorDisplayTime);
+};
+
+const showUploadDataSucessMessage = ({ errorDisplayTime = 5000 } = {}) => {
+  const successElement = uploadSuccessTemplate.cloneNode(true);
+  body.insertAdjacentElement('beforeend', successElement);
+  setTimeout(() => successElement.remove(), errorDisplayTime);
+};
+
+
+export { getRandomInteger, createRandomIndexFromRangeGenerator, isEscapeKey, showDownloadDataErrorMessage, showUploadDataSucessMessage };
 
