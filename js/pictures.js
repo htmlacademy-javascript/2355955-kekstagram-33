@@ -22,4 +22,5 @@ const renderPhoto = ({ url, likes, comments, description }) => {
 
 export const renderPhotosList = (data) => {
   data.forEach(renderPhoto);
+
 };
