@@ -5,7 +5,7 @@ const uploadImageEditForm = document.querySelector('.img-upload__overlay');
 const closeUploadImageEditFormBtn = uploadImageEditForm.querySelector('.img-upload__cancel');
 const imgUploadPreview = uploadImageEditForm.querySelector('.img-upload__preview img');
 const imgUpload = imgUploadForm.querySelector('.img-upload__input');
-const imgUploadChangeEffectRadioInput = uploadImageEditForm.querySelectorAll('.effects__radio');
+const imgUploadChangeEffectRadioInputs = uploadImageEditForm.querySelectorAll('.effects__radio');
 const imgUploadEffectValueInput = uploadImageEditForm.querySelector('.effect-level__value');
 const scaleControlInput = uploadImageEditForm.querySelector('.scale__control--value');
 const sliderLevelEffectElement = uploadImageEditForm.querySelector('.effect-level__slider');
@@ -15,6 +15,9 @@ const inputHashtagField = imgUploadForm.querySelector('.text__hashtags');
 const inputCommentField = imgUploadForm.querySelector('.text__description');
 const submitButton = uploadImageEditForm.querySelector('.img-upload__submit');
 const uploadErrorTemplate = document.querySelector('#error').content.querySelector('.error');
+
+const SUITABLE_TEMPLATE = /^#[a-zа-яё0-9]{1,20}$/i;
+const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
 const SubmitButtonText = {
   IDLE: 'Сохранить',
@@ -37,20 +40,19 @@ const pristine = new Pristine(imgUploadForm, {
 
 });
 
-const validateHashtagFieldTemplate = (value) => {
-  const suitableTemplate = /^#[a-zа-яё0-9]{1,20}$/i;
-  return !value.trim().split(' ').some((tag) => !suitableTemplate.test(tag));
-};
+const validateHashtagFieldTemplate = (value) =>
+  !value.trim().split(' ').some((tag) => !SUITABLE_TEMPLATE.test(tag));
+
 const validateMaxHashtagCount = (value) => !(value.trim().split(' ').length > 5);
 
 const validateSameHashtag = (value) => {
-  const array = [];
+  const uniqueSybmolsArray = [];
   return value.trim().split(' ').reduce((acc, curr) => {
     if (!acc) {
       return false;
     }
-    if (!array.includes(curr)) {
-      array.push(curr);
+    if (!uniqueSybmolsArray.includes(curr)) {
+      uniqueSybmolsArray.push(curr);
       return acc;
     }
     return false;
@@ -221,10 +223,10 @@ function onImgUploadChangeEffectRadioInputChange({ target }) {
 }
 
 const onSubmitImgUploadFormBtnClick = (evt) => {
+  evt.preventDefault();
   if (!pristine.validate()) {
     return;
   }
-  evt.preventDefault();
   blockSubmitButton();
   const data = new FormData(evt.target);
   sendData(data)
@@ -246,12 +248,12 @@ const onSubmitImgUploadFormBtnClick = (evt) => {
 
 function closeUploadImageEditForm() {
   imgUploadForm.reset();
-  uploadImageEditForm.classList.toggle('hidden');
+  uploadImageEditForm.classList.add('hidden');
   body.classList.toggle('modal-open');
   imgUploadPreview.style.filter = '';
   imgUpload.value = '';
   scaleControlInput.value = '100';
-  imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.removeEventListener('change', onImgUploadChangeEffectRadioInputChange));
+  imgUploadChangeEffectRadioInputs.forEach((radioInput) => radioInput.removeEventListener('change', onImgUploadChangeEffectRadioInputChange));
 
   const defaultEffect = document.querySelector('.effects__radio[value="none"]');
   defaultEffect.checked = true;
@@ -269,16 +271,24 @@ function closeUploadImageEditForm() {
   sliderLevelEffectElement?.noUiSlider?.destroy();
 }
 
-
 function onImgUploadChange() {
-  imgUploadChangeEffectRadioInput.forEach((radioInput) => radioInput.addEventListener('change', onImgUploadChangeEffectRadioInputChange));
-  scaleControlInput.value = 100;
+  const file = imgUpload.files[0];
+  const fileName = file.name.toLowerCase();
+  const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
 
+  if (!matches) {
+    return;
+  }
+
+  imgUploadPreview.src = URL.createObjectURL(file);
+  imgUploadChangeEffectRadioInputs.forEach((radioInput) => radioInput.addEventListener('change', onImgUploadChangeEffectRadioInputChange));
+  scaleControlInput.value = 100;
+  document.addEventListener('keydown', onDocumentKeydown);
   scaleControlBiggerBtn.addEventListener('click', onScaleControlBiggerBtnClick);
   scaleControlSmallerBtn.addEventListener('click', onScaleControlSmallerBtnClick);
 
   closeUploadImageEditFormBtn.addEventListener('click', onUploadImageEditFormBtnClick);
-  document.addEventListener('keydown', onDocumentKeydown);
+
   inputHashtagField.addEventListener('focus', onInputOrHashtagFieldFocus);
   inputCommentField.addEventListener('focus', onInputOrHashtagFieldFocus);
   inputHashtagField.addEventListener('blur', onInputOrHashtagFieldBlur);

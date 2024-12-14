@@ -31,7 +31,7 @@ const filterTypeDictionary = {
   default: (a, b) => a - b,
   discussed: (a, b) => b.comments.length - a.comments.length,
 };
-const filteredImgDataByFilterType = (evt) => {
+const filterImgDataByFilterType = (evt) => {
   const currentFilter = evt.target.getAttribute('id').split('-')[1];
   filterTabs.forEach((tab) => tab.classList.remove('img-filters__button--active'));
   evt.target.classList.toggle('img-filters__button--active');
@@ -61,6 +61,6 @@ const filteredImgDataByFilterType = (evt) => {
     });
 };
 
-const debounced = debounce(filteredImgDataByFilterType);
+const debounced = debounce(filterImgDataByFilterType);
 imgFilter.addEventListener('click', debounced);
 export { showImgFilter };
